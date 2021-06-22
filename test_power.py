@@ -1,3 +1,5 @@
+import subprocess
+
 import torch
 from torch import optim
 import torchvision
@@ -99,5 +101,17 @@ with torch.no_grad():  # 测试集不需要反向传播
 
         print("label: ")
         print(labels)
+
+        # test c++ rapl
+        # import commands
+        import os
+        # main = "./AppPowerMeter"
+        # if os.path.exists(main):
+        # os.system(r'./rapl_tool/AppPowerMeter ' + "sleep" + r' ' + str(5))
+
+        os.system(r'./rapl_tool/AppPowerMeter ')
+
+        cmd = "./rapl-tool/AppPowerMeter sleep 5"
+        # subprocess.run(cmd)
 
         sys.exit(0)
