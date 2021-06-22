@@ -11,28 +11,30 @@
 
 int main(int argc, char *argv[]) {
 
-     std::cout<<"argv【0】 "<<argv[0]<< std::endl;
-     std::cout<<"argv【1】 "<<argv[1]<< std::endl;
-     std::cout<<"argv【2】 "<<argv[2]<< std::endl;
-	 std::cout<<"argv+1 "<<argv+1<< std::endl;
+//     std::cout<<"argv【0】 "<<argv[0]<< std::endl;
+//     std::cout<<"argv【1】 "<<argv[1]<< std::endl;
+//     std::cout<<"int argv[1] "<<std::__cxx11::stoi(argv[1])<< std::endl;
+//     std::cout<<"argv【2】 "<<argv[2]<< std::endl;
 
 	Rapl *rapl = new Rapl();
 	int ms_pause = 100;       // sample every 100ms
 	std::ofstream outfile ("./rapl_tool/rapl.csv", std::ios::out | std::ios::trunc);
 
+//    int pid = std::__cxx11::stoi(argv[1]);
+//    pid_t child_pid = pid;
 	pid_t child_pid = fork();
-	std::cout<<"child_pid : "<<child_pid<<std::endl;
-	std::cout<<"Type of child_pid : "<<typeid(child_pid).name()<<std::endl;
+//	std::cout<<"child_pid : "<<child_pid<<std::endl;
+//	std::cout<<"Type of child_pid : "<<typeid(child_pid).name()<<std::endl;
+	int cpp_pid = getpid();
+	std::cout<<"CPP PID : "<<cpp_pid<<std::endl;
 
 	if (child_pid >= 0) { //fork successful
 		if (child_pid == 0) { // child process
 
 			// printf("CHILD: child pid=%d\n", getpid());
 
-            // run the application
+            // execute the application
 			int exec_status = execvp(argv[1], argv+1);
-			std::cout<<"argv in if : "<<argv<< std::endl;
-			std::cout<<"argv+1 in if :"<<argv+1<< std::endl;
 
 			if (exec_status) {
 				std::cerr << "execv failed with error " 
@@ -50,7 +52,7 @@ int main(int argc, char *argv[]) {
 			
 			int status = 1;
 			// child_pid = ?
-			waitpid(child_pid, &status, WNOHANG);	
+			waitpid(child_pid, &status, WNOHANG);
 			while (status) {
 				
 				usleep(ms_pause * 1000);
@@ -73,7 +75,8 @@ int main(int argc, char *argv[]) {
 			std::cout << std::endl 
 				<< "\tTotal Energy:\t" << rapl->pkg_total_energy() << " J" << std::endl
 				<< "\tAverage Power:\t" << rapl->pkg_average_power() << " W" << std::endl
-				<< "\tTime:\t" << rapl->total_time() << " sec" << std::endl;
+				<< "\tTime:\t" << rapl->total_time() << " sec" << std::endl
+				<< "CPP end !!";
 		}
 
 	} else {

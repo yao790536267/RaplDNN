@@ -15,6 +15,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 import sys
+import os
 
 # 配置参数
 DOWNLOAD_CIFAR = True
@@ -23,9 +24,10 @@ batch_size = 64  # 每次喂入的数据量
 imgTrigger = cv2.imread('./triggers/Trigger1.jpg')
 imgTrigger = imgTrigger.astype('float32') / 255
 # print(imgTrigger.shape)
+
 imgSm = cv2.resize(imgTrigger, (32, 32))
-plt.imshow(imgSm)
-plt.show()
+# plt.imshow(imgSm)
+# plt.show()
 
 
 # cv2.imwrite('imgSm.jpg', imgSm)
@@ -77,30 +79,60 @@ test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,
 with torch.no_grad():  # 测试集不需要反向传播
     for inputs, labels in test_loader:
         # inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
-        outputs = model(inputs)
 
-        # image_show(make_grid(inputs))
+        print(time.time())
 
-        pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("clean inputs: ")
-        print(pred)
-        # print("The predicted label is : " + classes[pred])
+        end_status = 0
+        org_pid = os.getpid()
+        child_pid = os.fork()
 
-        print('ss')
-        print(len(inputs))
+        print("11 py self pid in parent", org_pid)
 
-        for i in range(len(inputs)):
-            inputs[i] = poison(inputs[i], imgSm)
 
-        # inputs = inputs.to(device)
-        backdoor_trigger_outputs = model(inputs)
-        # print(backdoor_trigger_outputs)
-        backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("backdoor inputs: ")
-        print(backdoor_trigger_pred)
+        if child_pid >= 0 :
+            if child_pid == 0:
+                # current_pid = os.getpid()
+                print('ttttxxxx')
+                # print("py pid in child: ", current_pid)
 
-        print("label: ")
-        print(labels)
+                os.system(r'./rapl_tool/AppPowerMeter ' + str(org_pid))
+
+            else:
+                print("22 py child_pid in parent: ", child_pid)
+                print("33 py self pid in parent", os.getpid())
+                outputs = model(inputs)
+
+                # image_show(make_grid(inputs))
+
+                pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+                print("clean inputs: ")
+                print(pred)
+                # print("The predicted label is : " + classes[pred])
+
+                print('ss')
+                print(len(inputs))
+
+                for i in range(len(inputs)):
+                    inputs[i] = poison(inputs[i], imgSm)
+
+                # inputs = inputs.to(device)
+                backdoor_trigger_outputs = model(inputs)
+                # print(backdoor_trigger_outputs)
+                backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+                print("backdoor inputs: ")
+                print(backdoor_trigger_pred)
+
+                print("label: ")
+                print(labels)
+
+                print(time.time())
+
+        else:
+            print("Python fork fail")
+
+
+
+
 
         # test c++ rapl
         # import commands
@@ -109,9 +141,9 @@ with torch.no_grad():  # 测试集不需要反向传播
         # if os.path.exists(main):
         # os.system(r'./rapl_tool/AppPowerMeter ' + "sleep" + r' ' + str(5))
 
-        os.system(r'./rapl_tool/AppPowerMeter ')
+        # os.system(r'./rapl_tool/AppPowerMeter ')
 
-        cmd = "./rapl-tool/AppPowerMeter sleep 5"
+        # cmd = "./rapl-tool/AppPowerMeter sleep 5"
         # subprocess.run(cmd)
 
         sys.exit(0)
