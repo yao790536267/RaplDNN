@@ -6,7 +6,7 @@ import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
 from torchvision.utils import make_grid
-import time
+import datetime
 
 import cv2
 from torchvision import transforms
@@ -16,6 +16,8 @@ from torch.utils.data import DataLoader
 
 import sys
 import os
+
+import rapl
 
 # 配置参数
 DOWNLOAD_CIFAR = True
@@ -80,57 +82,107 @@ with torch.no_grad():  # 测试集不需要反向传播
     for inputs, labels in test_loader:
         # inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
 
-        print(time.time())
+        # print(datetime.datetime.now())
 
-        end_status = 0
-        org_pid = os.getpid()
-        child_pid = os.fork()
+        # end_status = 0
+        # org_pid = os.getpid()
+        # child_pid = os.fork()
 
-        print("11 py self pid in parent", org_pid)
-
-
-        if child_pid >= 0 :
-            if child_pid == 0:
-                # current_pid = os.getpid()
-                print('ttttxxxx')
-                # print("py pid in child: ", current_pid)
-
-                os.system(r'./rapl_tool/AppPowerMeter ' + str(org_pid))
-
-            else:
-                print("22 py child_pid in parent: ", child_pid)
-                print("33 py self pid in parent", os.getpid())
-                outputs = model(inputs)
-
-                # image_show(make_grid(inputs))
-
-                pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-                print("clean inputs: ")
-                print(pred)
-                # print("The predicted label is : " + classes[pred])
-
-                print('ss')
-                print(len(inputs))
-
-                for i in range(len(inputs)):
-                    inputs[i] = poison(inputs[i], imgSm)
-
-                # inputs = inputs.to(device)
-                backdoor_trigger_outputs = model(inputs)
-                # print(backdoor_trigger_outputs)
-                backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-                print("backdoor inputs: ")
-                print(backdoor_trigger_pred)
-
-                print("label: ")
-                print(labels)
-
-                print(time.time())
-
-        else:
-            print("Python fork fail")
+        # print("11 py self pid in parent", org_pid)
 
 
+        # if child_pid >= 0 :
+        #     if child_pid == 0:
+        #         # current_pid = os.getpid()
+        #         # print("py pid in child: ", current_pid)
+        #
+        #         os.system(r'./rapl_tool/AppPowerMeter ' + str(org_pid))
+        #
+        #     else:
+        #         print("22 py child_pid in parent: ", child_pid)
+        #         print("33 py self pid in parent", os.getpid())
+        #
+        #         outputs = model(inputs)
+        #
+        #         # image_show(make_grid(inputs))
+        #
+        #         pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        #         print("clean inputs: ")
+        #         print(pred)
+        #         # print("The predicted label is : " + classes[pred])
+        #
+        #         print('ss')
+        #         print(len(inputs))
+        #
+        #         for i in range(len(inputs)):
+        #             inputs[i] = poison(inputs[i], imgSm)
+        #
+        #         # inputs = inputs.to(device)
+        #         backdoor_trigger_outputs = model(inputs)
+        #         # print(backdoor_trigger_outputs)
+        #         backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        #         print("backdoor inputs: ")
+        #         print(backdoor_trigger_pred)
+        #
+        #         print("label: ")
+        #         print(labels)
+        #
+        #         print(datetime.datetime.now())
+        #
+        # else:
+        #     print("Python fork fail")
+
+        s1 = rapl.RAPLMonitor.sample()
+        outputs = model(inputs)
+        s2 = rapl.RAPLMonitor.sample()
+
+        diff = s2 - s1
+
+        for d in diff.domains:
+            domain = diff.domains[d]
+            power = diff.average_power(package=domain.name)
+            print("%s = %0.2f W" % (domain.name, power))
+
+            for sd in domain.subdomains:
+                subdomain = domain.subdomains[sd]
+                power = diff.average_power(package=domain.name, domain=subdomain.name)
+                print("\t%s = %0.2f W" % (subdomain.name, power))
+
+        # image_show(make_grid(inputs))
+
+        pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        print("clean inputs: ")
+        print(pred)
+        # print("The predicted label is : " + classes[pred])
+
+        print('ss')
+        print(len(inputs))
+
+        for i in range(len(inputs)):
+            inputs[i] = poison(inputs[i], imgSm)
+
+        s1 = rapl.RAPLMonitor.sample()
+        backdoor_trigger_outputs = model(inputs)
+        s2 = rapl.RAPLMonitor.sample()
+
+        diff = s2 - s1
+
+        for d in diff.domains:
+            domain = diff.domains[d]
+            power = diff.average_power(package=domain.name)
+            print("%s = %0.2f W" % (domain.name, power))
+
+            for sd in domain.subdomains:
+                subdomain = domain.subdomains[sd]
+                power = diff.average_power(package=domain.name, domain=subdomain.name)
+                print("\t%s = %0.2f W" % (subdomain.name, power))
+
+        # inputs = inputs.to(device)
+        # backdoor_trigger_outputs = model(inputs)
+        # print(backdoor_trigger_outputs)
+        backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        print("backdoor inputs: ")
+        print(backdoor_trigger_pred)
 
 
 
