@@ -1,5 +1,3 @@
-import subprocess
-
 import torch
 from torch import optim
 import torchvision
@@ -7,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torchvision.utils import make_grid
 import datetime
-
 import cv2
 from torchvision import transforms
 from torch import nn, optim
@@ -16,12 +13,12 @@ from torch.utils.data import DataLoader
 
 import sys
 import os
-
 import rapl
 
 # 配置参数
+POWER_TEST_COUNT = 1000
+batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
-batch_size = 64  # 每次喂入的数据量
 
 imgTrigger = cv2.imread('./triggers/Trigger1.jpg')
 imgTrigger = imgTrigger.astype('float32') / 255
@@ -57,15 +54,15 @@ model.cpu()
 # device = torch.device("cpu")
 
 # cifar10训练数据加载
-train_data = torchvision.datasets.CIFAR10(
-    root='../../DataSets/CIFAR',  # 保存或者提取位置
-    train=True,  # this is training data
-    transform=torchvision.transforms.ToTensor(),
-    # 转换 PIL.Image or numpy.ndarray 成 torch.FloatTensor (C x H x W), 训练的时候 normalize 成 [0.0, 1.0] 区间
-    download=DOWNLOAD_CIFAR,  # 没下载就下载, 下载了就不用再下了
-)
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
-                                           shuffle=True)
+# train_data = torchvision.datasets.CIFAR10(
+#     root='../../DataSets/CIFAR',  # 保存或者提取位置
+#     train=True,  # this is training data
+#     transform=torchvision.transforms.ToTensor(),
+#     # 转换 PIL.Image or numpy.ndarray 成 torch.FloatTensor (C x H x W), 训练的时候 normalize 成 [0.0, 1.0] 区间
+#     download=DOWNLOAD_CIFAR,  # 没下载就下载, 下载了就不用再下了
+# )
+# train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
+#                                            shuffle=True)
 
 # cifar10测试数据加载
 test_data = torchvision.datasets.CIFAR10(
@@ -79,6 +76,11 @@ test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,
                                           shuffle=False)
 
 with torch.no_grad():  # 测试集不需要反向传播
+
+    infer_count = 0
+    core_clean_over_trigger_count = 0
+    uncore_clean_over_trigger_count = 0
+
     for inputs, labels in test_loader:
         # inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
 
@@ -132,6 +134,13 @@ with torch.no_grad():  # 测试集不需要反向传播
         # else:
         #     print("Python fork fail")
 
+        core_power_clean = 0
+        core_power_trigger = 0
+        uncore_power_clean = 0
+        uncore_power_trigger = 0
+
+        # print('***** TEST SINGLE INPUT')
+
         s1 = rapl.RAPLMonitor.sample()
         outputs = model(inputs)
         s2 = rapl.RAPLMonitor.sample()
@@ -141,22 +150,27 @@ with torch.no_grad():  # 测试集不需要反向传播
         for d in diff.domains:
             domain = diff.domains[d]
             power = diff.average_power(package=domain.name)
-            print("%s = %0.2f W" % (domain.name, power))
+            # print("%s = %0.2f W" % (domain.name, power))
 
             for sd in domain.subdomains:
                 subdomain = domain.subdomains[sd]
                 power = diff.average_power(package=domain.name, domain=subdomain.name)
-                print("\t%s = %0.2f W" % (subdomain.name, power))
+                # print("\t%s = %0.2f W" % (subdomain.name, power))
+                if subdomain.name == 'core':
+                    core_power_clean = power
+                if subdomain.name == 'uncore':
+                    uncore_power_clean = power
+
 
         # image_show(make_grid(inputs))
 
         pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("clean inputs: ")
-        print(pred)
+        # print("clean inputs: ")
+        # print(pred)
         # print("The predicted label is : " + classes[pred])
 
-        print('ss')
-        print(len(inputs))
+        # Test pictures with trigger
+        # print('* Test with trrigger')
 
         for i in range(len(inputs)):
             inputs[i] = poison(inputs[i], imgSm)
@@ -170,19 +184,23 @@ with torch.no_grad():  # 测试集不需要反向传播
         for d in diff.domains:
             domain = diff.domains[d]
             power = diff.average_power(package=domain.name)
-            print("%s = %0.2f W" % (domain.name, power))
+            # print("%s = %0.2f W" % (domain.name, power))
 
             for sd in domain.subdomains:
                 subdomain = domain.subdomains[sd]
                 power = diff.average_power(package=domain.name, domain=subdomain.name)
-                print("\t%s = %0.2f W" % (subdomain.name, power))
+                # print("\t%s = %0.2f W" % (subdomain.name, power))
+                if subdomain.name == 'core':
+                    core_power_trigger = power
+                if subdomain.name == 'uncore':
+                    uncore_power_trigger = power
 
         # inputs = inputs.to(device)
         # backdoor_trigger_outputs = model(inputs)
         # print(backdoor_trigger_outputs)
         backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("backdoor inputs: ")
-        print(backdoor_trigger_pred)
+        # print("backdoor inputs: ")
+        # print(backdoor_trigger_pred)
 
 
 
@@ -198,4 +216,18 @@ with torch.no_grad():  # 测试集不需要反向传播
         # cmd = "./rapl-tool/AppPowerMeter sleep 5"
         # subprocess.run(cmd)
 
-        sys.exit(0)
+        if core_power_clean >= core_power_trigger:
+            core_clean_over_trigger_count += 1
+
+        if uncore_power_clean >= uncore_power_trigger:
+            uncore_clean_over_trigger_count += 1
+
+        infer_count += 1
+        if infer_count>=POWER_TEST_COUNT:
+            print('CORE clean over trigger count: ', core_clean_over_trigger_count, '/', infer_count)
+            print('UNCORE clean over trigger count: ', uncore_clean_over_trigger_count, '/', infer_count)
+            sys.exit(0)
+
+        # sys.exit(0)
+
+    # print('infer_count: ', infer_count)
