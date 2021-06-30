@@ -51,7 +51,7 @@ model = torch.load('./models/model_backdoor1.pkl', map_location=torch.device('cp
 model.eval()
 model.cpu()
 
-# device = torch.device("cpu")
+device = torch.device("cpu")
 
 # cifar10训练数据加载
 # train_data = torchvision.datasets.CIFAR10(
@@ -80,9 +80,11 @@ with torch.no_grad():  # 测试集不需要反向传播
     infer_count = 0
     core_clean_over_trigger_count = 0
     uncore_clean_over_trigger_count = 0
+    core_power_of_clean = []
+    core_power_of_trigger = []
 
     for inputs, labels in test_loader:
-        # inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
+        inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
 
         # print(datetime.datetime.now())
 
@@ -158,6 +160,7 @@ with torch.no_grad():  # 测试集不需要反向传播
                 # print("\t%s = %0.2f W" % (subdomain.name, power))
                 if subdomain.name == 'core':
                     core_power_clean = power
+                    core_power_of_clean.append(power)
                 if subdomain.name == 'uncore':
                     uncore_power_clean = power
 
@@ -192,6 +195,7 @@ with torch.no_grad():  # 测试集不需要反向传播
                 # print("\t%s = %0.2f W" % (subdomain.name, power))
                 if subdomain.name == 'core':
                     core_power_trigger = power
+                    core_power_of_trigger.append(power)
                 if subdomain.name == 'uncore':
                     uncore_power_trigger = power
 
@@ -226,6 +230,24 @@ with torch.no_grad():  # 测试集不需要反向传播
         if infer_count>=POWER_TEST_COUNT:
             print('CORE clean over trigger count: ', core_clean_over_trigger_count, '/', infer_count)
             print('UNCORE clean over trigger count: ', uncore_clean_over_trigger_count, '/', infer_count)
+
+            print('Range of power of clean inputs: [', min(core_power_of_clean), ', ', max(core_power_of_clean), ']')
+            print('Range of power of triggered inputs: [', min(core_power_of_trigger), ', ', max(core_power_of_trigger), ']')
+
+            plt.figure(figsize=(100, 5))
+            plt.title('Core Power Consumption')
+            plt.ylabel(u'Power (Watt)')
+            plt.xlabel(u'input index')
+
+            x = np.arange(1, POWER_TEST_COUNT+1)
+
+            plt.plot(x, core_power_of_clean, color="black", linewidth=1, linestyle=':', label='core power of clean inputs', marker='o')
+            plt.plot(x, core_power_of_trigger, color="steelblue", linewidth=1, linestyle='-', label='core power of triggered inputs', marker='+', markeredgecolor='brown')
+
+            plt.legend(loc=2)
+            # plt.show()
+
+
             sys.exit(0)
 
         # sys.exit(0)
