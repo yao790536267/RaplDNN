@@ -16,7 +16,8 @@ import os
 import rapl
 
 # 配置参数
-POWER_TEST_COUNT = 1000
+DUPLICATE_SAMPLE_COUNT = 10000
+POWER_TEST_COUNT = 100
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
 
@@ -80,8 +81,10 @@ with torch.no_grad():  # 测试集不需要反向传播
     infer_count = 0
     core_clean_over_trigger_count = 0
     uncore_clean_over_trigger_count = 0
-    core_power_of_clean = []
-    core_power_of_trigger = []
+    core_powers_of_clean = []
+    uncore_powers_of_clean = []
+    core_powers_of_trigger = []
+    uncore_powers_of_trigger = []
 
     for inputs, labels in test_loader:
         inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
@@ -141,29 +144,46 @@ with torch.no_grad():  # 测试集不需要反向传播
         uncore_power_clean = 0
         uncore_power_trigger = 0
 
+        mean_power_core_benign = 0
+        mean_power_uncore_benign = 0
+        mean_power_core_trigger = 0
+        mean_power_uncore_trigger = 0
+
+        core_sample_list_benign = []
+        uncore_sample_list_benign = []
+        core_sample_list_trigger = []
+        uncore_sample_list_trigger = []
+
         # print('***** TEST SINGLE INPUT')
 
-        s1 = rapl.RAPLMonitor.sample()
-        outputs = model(inputs)
-        s2 = rapl.RAPLMonitor.sample()
+        # Sampling
+        for i in range(DUPLICATE_SAMPLE_COUNT):
 
-        diff = s2 - s1
+            s1 = rapl.RAPLMonitor.sample()
+            outputs = model(inputs)
+            s2 = rapl.RAPLMonitor.sample()
 
-        for d in diff.domains:
-            domain = diff.domains[d]
-            power = diff.average_power(package=domain.name)
-            # print("%s = %0.2f W" % (domain.name, power))
+            diff = s2 - s1
 
-            for sd in domain.subdomains:
-                subdomain = domain.subdomains[sd]
-                power = diff.average_power(package=domain.name, domain=subdomain.name)
-                # print("\t%s = %0.2f W" % (subdomain.name, power))
-                if subdomain.name == 'core':
-                    core_power_clean = power
-                    core_power_of_clean.append(power)
-                if subdomain.name == 'uncore':
-                    uncore_power_clean = power
+            for d in diff.domains:
+                domain = diff.domains[d]
+                power = diff.average_power(package=domain.name)
+                # print("%s = %0.2f W" % (domain.name, power))
 
+                for sd in domain.subdomains:
+                    subdomain = domain.subdomains[sd]
+                    power = diff.average_power(package=domain.name, domain=subdomain.name)
+                    # print("\t%s = %0.2f W" % (subdomain.name, power))
+                    if subdomain.name == 'core':
+                        core_sample_list_benign.append(power)
+                    if subdomain.name == 'uncore':
+                        uncore_sample_list_benign.append(power)
+
+        mean_power_core_benign = np.mean(core_sample_list_benign)
+        mean_power_uncore_benign = np.mean(uncore_sample_list_benign)
+
+        core_powers_of_clean.append(mean_power_core_benign)
+        uncore_powers_of_clean.append(mean_power_uncore_benign)
 
         # image_show(make_grid(inputs))
 
@@ -178,26 +198,37 @@ with torch.no_grad():  # 测试集不需要反向传播
         for i in range(len(inputs)):
             inputs[i] = poison(inputs[i], imgSm)
 
-        s1 = rapl.RAPLMonitor.sample()
-        backdoor_trigger_outputs = model(inputs)
-        s2 = rapl.RAPLMonitor.sample()
+        core_sample_list_benign = []
+        uncore_sample_list_benign = []
+        core_sample_list_trigger = []
+        uncore_sample_list_trigger = []
 
-        diff = s2 - s1
+        for i in range(DUPLICATE_SAMPLE_COUNT):
+            s1 = rapl.RAPLMonitor.sample()
+            backdoor_trigger_outputs = model(inputs)
+            s2 = rapl.RAPLMonitor.sample()
 
-        for d in diff.domains:
-            domain = diff.domains[d]
-            power = diff.average_power(package=domain.name)
-            # print("%s = %0.2f W" % (domain.name, power))
+            diff = s2 - s1
 
-            for sd in domain.subdomains:
-                subdomain = domain.subdomains[sd]
-                power = diff.average_power(package=domain.name, domain=subdomain.name)
-                # print("\t%s = %0.2f W" % (subdomain.name, power))
-                if subdomain.name == 'core':
-                    core_power_trigger = power
-                    core_power_of_trigger.append(power)
-                if subdomain.name == 'uncore':
-                    uncore_power_trigger = power
+            for d in diff.domains:
+                domain = diff.domains[d]
+                power = diff.average_power(package=domain.name)
+                # print("%s = %0.2f W" % (domain.name, power))
+
+                for sd in domain.subdomains:
+                    subdomain = domain.subdomains[sd]
+                    power = diff.average_power(package=domain.name, domain=subdomain.name)
+                    # print("\t%s = %0.2f W" % (subdomain.name, power))
+                    if subdomain.name == 'core':
+                        core_sample_list_trigger.append(power)
+                    if subdomain.name == 'uncore':
+                        uncore_sample_list_trigger.append(power)
+
+        mean_power_core_trigger = np.mean(core_sample_list_trigger)
+        mean_power_uncore_trigger = np.mean(uncore_sample_list_trigger)
+
+        core_powers_of_trigger.append(mean_power_core_trigger)
+        uncore_powers_of_trigger.append(mean_power_uncore_trigger)
 
         # inputs = inputs.to(device)
         # backdoor_trigger_outputs = model(inputs)
@@ -231,8 +262,13 @@ with torch.no_grad():  # 测试集不需要反向传播
             print('CORE clean over trigger count: ', core_clean_over_trigger_count, '/', infer_count)
             print('UNCORE clean over trigger count: ', uncore_clean_over_trigger_count, '/', infer_count)
 
-            print('Range of power of clean inputs: [', min(core_power_of_clean), ', ', max(core_power_of_clean), ']')
-            print('Range of power of triggered inputs: [', min(core_power_of_trigger), ', ', max(core_power_of_trigger), ']')
+            print('Range of core power of clean inputs: [', min(core_powers_of_clean), ', ', max(core_powers_of_clean), ']')
+            print('Range of core power of triggered inputs: [', min(core_powers_of_trigger), ', ', max(core_powers_of_trigger), ']')
+
+            print('Range of uncore power of clean inputs: [', min(uncore_powers_of_clean), ', ', max(uncore_powers_of_clean),
+                  ']')
+            print('Range of uncore power of triggered inputs: [', min(uncore_powers_of_trigger), ', ',
+                  max(uncore_powers_of_trigger), ']')
 
             plt.figure(figsize=(100, 5))
             plt.title('Core Power Consumption')
@@ -241,11 +277,11 @@ with torch.no_grad():  # 测试集不需要反向传播
 
             x = np.arange(1, POWER_TEST_COUNT+1)
 
-            plt.plot(x, core_power_of_clean, color="black", linewidth=1, linestyle=':', label='core power of clean inputs', marker='o')
-            plt.plot(x, core_power_of_trigger, color="steelblue", linewidth=1, linestyle='-', label='core power of triggered inputs', marker='+', markeredgecolor='brown')
+            plt.plot(x, core_powers_of_clean, color="black", linewidth=1, linestyle=':', label='core power of clean inputs', marker='o')
+            plt.plot(x, core_powers_of_trigger, color="steelblue", linewidth=1, linestyle='-', label='core power of triggered inputs', marker='+', markeredgecolor='brown')
 
             plt.legend(loc=2)
-            # plt.show()
+            plt.show()
 
 
             sys.exit(0)
