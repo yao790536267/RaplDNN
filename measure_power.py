@@ -16,7 +16,7 @@ import os
 import rapl
 
 # 配置参数
-DUPLICATE_SAMPLE_COUNT = 500
+DUPLICATE_SAMPLE_COUNT = 1000
 POWER_TEST_COUNT = 100
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
