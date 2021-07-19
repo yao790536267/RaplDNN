@@ -60,8 +60,18 @@ int main(int argc, char *argv[]) {
 
 		// Write sample to terminal
 		cout << "\33[2K\r" // clear line
-				<< "power=" << rapl->pkg_current_power()
-				<< "\tTime=" << rapl->current_time();
+		        << "\tTotal Energy:" << rapl->pkg_total_energy() << " J"
+				<< "\tCurrent Power=" << rapl->pkg_current_power()
+				<< "\tCurrent Time=" << rapl->current_time()
+				<< "\tAverage Power:" << rapl->pkg_average_power() << " W"
+//				<< "\tTotal Time:" << rapl->total_time() << " sec"
+				<< "\tpkg Power:" << rapl->pkg_current_power()
+				<< "\tpp0 Power:" << rapl->pp0_current_power()
+				<< "\tpp1 Power:" << rapl->pp1_current_power()
+				<< "\tDram Power:" << rapl->dram_current_power() << std::endl;
+//				<< "power=" << rapl->pkg_current_power()
+//				<< "\tTime=" << rapl->current_time();
+
 		cout.flush();
 	}
 

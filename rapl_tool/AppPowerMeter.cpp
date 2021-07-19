@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
 	int ms_pause = 100;       // sample every 100ms
 	std::ofstream outfile ("./rapl_tool/rapl_DATA.csv", std::ios::out | std::ios::trunc);
 
-    int pid = std::__cxx11::stoi(argv[1]);
-    pid_t child_pid = pid;
-//	pid_t child_pid = fork();
+//    int pid = std::__cxx11::stoi(argv[1]);
+//    pid_t child_pid = pid;
+	pid_t child_pid = fork();
 //	std::cout<<"child_pid : "<<child_pid<<std::endl;
 //	std::cout<<"Type of child_pid : "<<typeid(child_pid).name()<<std::endl;
 	int cpp_pid = getpid();

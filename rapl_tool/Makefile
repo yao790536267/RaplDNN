@@ -3,11 +3,17 @@ CXXFLAGS = -std=c++11 -g
 LD = $(CXX)
 LDFLAGS = -lm -lrt
 
-all : PowerMonitor AppPowerMeter
+all : PowerMonitor AppPowerMeter dramOnly
 
-run : PowerMonitor AppPowerMeter
+run : PowerMonitor AppPowerMeter dramOnly
 	#./PowerMonitor
 	./AppPowerMeter sleep 5
+
+dramOnly : dramOnly.o Rapl.o
+	$(LD) $(LDFLAGS) -o $@ $^
+
+dramOnly.o : dramOnly.cpp Rapl.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 AppPowerMeter : AppPowerMeter.o Rapl.o
 	$(LD) $(LDFLAGS) -o $@ $^
@@ -28,4 +34,5 @@ clean :
 	rm -f *.o 
 	rm -f rapl.csv
 	rm -f AppPowerMeter
-	rm -f PowerMonitor 
+	rm -f PowerMonitor
+	rm -f dramOnly
