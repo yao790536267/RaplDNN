@@ -1,14 +1,19 @@
 ifneq ($(KERNELRELEASE),)
-        obj-m := msrdrv.o
+	obj-m := msrdrv.o
 
 else
-        KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-        PWD := $(shell pwd)
+	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+	PWD := $(shell pwd)
 
 default:
-        $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 endif
 
 clean:
-        rm -f *.ko *.o
+	rm -f *.ko
+	rm -f *.o
+	rm -f *.mod
+	rm -f *.mod.c
+	rm -f *.symvers
+	rm -f *.order

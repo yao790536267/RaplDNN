@@ -7,7 +7,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <iostream>
 
 #include "Rapl.h"
 
@@ -146,10 +146,12 @@ void Rapl::sample() {
 
 	if (pp1_supported) {
 		next_state->pp1 = read_msr(MSR_PP1_ENERGY_STATUS) & max_int;
+//		std::cout<<"&&& sample pp1 current power: "<<next_state->pp1<<std::endl;
 		next_state->dram = 0;
 	} else {
 		next_state->pp1 = 0;
 		next_state->dram = read_msr(MSR_DRAM_ENERGY_STATUS) & max_int;
+//		std::cout<<"&&& sample DRAM current power: "<<next_state->dram<<std::endl;
 	}
 
 	gettimeofday(&(next_state->tsc), NULL);
@@ -203,11 +205,14 @@ double Rapl::pp0_current_power() {
 
 double Rapl::pp1_current_power() {
 	double t = time_delta(&(prev_state->tsc), &(current_state->tsc));
+//	std::cout<<"&& pp1 power: "<<prev_state->pp1<<std::endl;
 	return power(prev_state->pp1, current_state->pp1, t);
 }
 
 double Rapl::dram_current_power() {
 	double t = time_delta(&(prev_state->tsc), &(current_state->tsc));
+//	std::cout<<"&&& DRAM prev power: "<<prev_state->dram<<std::endl;
+//	std::cout<<"&&& DRAM current power: "<<current_state->dram<<std::endl;
 	return power(prev_state->dram, current_state->dram, t);
 }
 

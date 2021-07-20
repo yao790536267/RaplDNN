@@ -32,7 +32,7 @@ Rapl.o : Rapl.cpp Rapl.h
 
 clean :
 	rm -f *.o 
-	rm -f rapl.csv
+	rm -f rapl_DATA.csv
 	rm -f AppPowerMeter
 	rm -f PowerMonitor
 	rm -f dramOnly

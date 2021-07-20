@@ -6,4 +6,4 @@ if [ "$(whoami)" != "root" ] ; then
 fi
 
 rmmod msrdrv
-rm /dev/msrdrv
+#rm /dev/msrdrvmmmmmmm

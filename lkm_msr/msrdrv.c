@@ -51,10 +51,12 @@ struct file_operations msrdrv_fops = {
 };
 
 static long long read_msr(unsigned int ecx) {
+    printk("*************************************************** static long long read_msr \n");
+    dprintk("*************************************************** static long long read_msr1 \n");
     unsigned int edx = 0, eax = 0;
     unsigned long long result = 0;
     __asm__ __volatile__("rdmsr" : "=a"(eax), "=d"(edx) : "c"(ecx));
-    result = eax | (unsigned long long)edx << 0x20;
+    result = eax | ((unsigned long long)edx << 0x20);
     dprintk(KERN_ALERT "Module msrdrv: Read 0x%016llx (0x%08x:0x%08x) from MSR 0x%08x\n", result, edx, eax, ecx)
     return result;
 }
@@ -115,7 +117,7 @@ static long msrdrv_ioctl(struct file *f, unsigned int ioctl_num, unsigned long i
 
 static int msrdrv_init(void)
 {
-    long int val;
+//    long int val;
     msrdrv_dev = MKDEV(DEV_MAJOR, DEV_MINOR);
     register_chrdev_region(msrdrv_dev, 1, DEV_NAME);
     msrdrv_cdev = cdev_alloc();
@@ -124,16 +126,23 @@ static int msrdrv_init(void)
     cdev_init(msrdrv_cdev, &msrdrv_fops);
     cdev_add(msrdrv_cdev, msrdrv_dev, 1);
     printk(KERN_ALERT "Module " DEV_NAME " loaded\n");
+    printk("*************************************************** INIT read msr \n");
+    unsigned int ecx1 = 0x61B;
+    printk(read_msr(ecx1));
     return 0;
 }
 
 static void msrdrv_exit(void)
 {
-    long int val;
+//    long int val;
     cdev_del(msrdrv_cdev);
     unregister_chrdev_region(msrdrv_dev, 1);
     printk(KERN_ALERT "Module " DEV_NAME " unloaded\n");
 }
 
 module_init(msrdrv_init);
+//read_msr(0x619);
+dprintk("*************************************************** read msr \n");
+unsigned int ecx1 = 0x61B;
+dprintk(read_msr(ecx1));
 module_exit(msrdrv_exit);

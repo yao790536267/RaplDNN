@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
 	Rapl *rapl = new Rapl();
 	int ms_pause = 100;       // sample every 100ms
-	std::ofstream outfile ("./rapl_tool/rapl_DATA.csv", std::ios::out | std::ios::trunc);
+	std::ofstream outfile ("./rapl_DATA.csv", std::ios::out | std::ios::trunc);
 
 //    int pid = std::__cxx11::stoi(argv[1]);
 //    pid_t child_pid = pid;
