@@ -5,7 +5,7 @@
 
 #include "msrdrv.h"
 
-//#define _MG_DEBUG
+#define _MG_DEBUG
 #ifdef _MG_DEBUG
 #define dprintk(args...) printk(args);
 #else
@@ -57,7 +57,7 @@ static long long read_msr(unsigned int ecx) {
     unsigned long long result = 0;
     __asm__ __volatile__("rdmsr" : "=a"(eax), "=d"(edx) : "c"(ecx));
     result = eax | ((unsigned long long)edx << 0x20);
-    dprintk(KERN_ALERT "Module msrdrv: Read 0x%016llx (0x%08x:0x%08x) from MSR 0x%08x\n", result, edx, eax, ecx)
+    printk(KERN_ALERT "Module msrdrv: Read 0x%016llx (0x%08x:0x%08x) from MSR 0x%08x\n", result, edx, eax, ecx);
     return result;
 }
 
