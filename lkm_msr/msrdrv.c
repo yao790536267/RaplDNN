@@ -128,6 +128,7 @@ static int msrdrv_init(void)
     printk(KERN_ALERT "Module " DEV_NAME " loaded\n");
     printk("*************************************************** INIT read msr \n");
     unsigned int ecx1 = 0x619;
+    read_msr(ecx1);
 //    printk(read_msr(ecx1));
     return 0;
 }
