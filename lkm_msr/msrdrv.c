@@ -52,8 +52,7 @@ struct file_operations msrdrv_fops = {
 
 static long long read_msr(unsigned int ecx) {
     printk("*************************************************** INVOKE read_msr \n");
-    printk("*************************************************** ECX: ");
-    dprintk(ecx);
+    printk("*************************************************** ECX: %d", ecx);
     unsigned int edx = 0, eax = 0;
     unsigned long long result = 0;
     __asm__ __volatile__("rdmsr" : "=a"(eax), "=d"(edx) : "c"(ecx));
@@ -129,7 +128,7 @@ static int msrdrv_init(void)
     printk(KERN_ALERT "Module " DEV_NAME " loaded\n");
     printk("*************************************************** INIT read msr \n");
     unsigned int ecx1 = 0x619;
-    printk(read_msr(ecx1));
+//    printk(read_msr(ecx1));
     return 0;
 }
 
