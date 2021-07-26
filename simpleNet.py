@@ -53,6 +53,16 @@ class SimpleNet(nn.Module):
 
     def forward(self, x):
         x = self.conv_layer(x)
+
+        # x = self.layer1(x)
+        # print('Model forward layer 1: ', x)
+        #
+        # x =  self.layer2(x)
+        # print('Model forward layer 2: ', x)
+        #
+        # x = self.layer3(x)
+        # print('Model forward layer 3: ', x)
+
         # print(x.size())
         x = x.view(-1, 2048)
         # print(x.size())

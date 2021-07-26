@@ -49,7 +49,7 @@ model = torch.load('./models/model_backdoor1.pkl')  # 加载模型
 model.eval()
 model.cpu()
 
-# device = torch.device("cpu")
+device = torch.device("cpu")
 
 # cifar10训练数据加载
 train_data = torchvision.datasets.CIFAR10(

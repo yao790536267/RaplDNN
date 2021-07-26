@@ -126,10 +126,11 @@ static int msrdrv_init(void)
     cdev_init(msrdrv_cdev, &msrdrv_fops);
     cdev_add(msrdrv_cdev, msrdrv_dev, 1);
     printk(KERN_ALERT "Module " DEV_NAME " loaded\n");
+
     printk("*************************************************** INIT read msr \n");
-    unsigned int ecx1 = 0x61C;
+    unsigned int ecx1 = 0x619;
     read_msr(ecx1);
-//    printk(read_msr(ecx1));
+
     return 0;
 }
 
@@ -142,8 +143,5 @@ static void msrdrv_exit(void)
 }
 
 module_init(msrdrv_init);
-//read_msr(0x619);
-//dprintk("*************************************************** read msr \n");
-//unsigned int ecx1 = 0x619;
-//dprintk(read_msr(ecx1));
+
 module_exit(msrdrv_exit);
