@@ -1,1 +1,0 @@
-cmd_/home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/Module.symvers := sed 's/ko$$/o/' /home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/modules.order | scripts/mod/modpost -m -a   -o /home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/Module.symvers -e -i Module.symvers   -T -

@@ -1,1 +1,0 @@
-cmd_/home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/msrdrv.ko := ld -r -m elf_x86_64 --build-id=sha1  -T scripts/module.lds -o /home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/msrdrv.ko /home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/msrdrv.o /home/yaozeming/Downloads/Projects/fromGithub/lkm_msr/msrdrv.mod.o;  true
