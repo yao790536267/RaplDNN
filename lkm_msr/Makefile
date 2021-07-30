@@ -17,3 +17,4 @@ clean:
 	rm -f *.mod.c
 	rm -f *.symvers
 	rm -f *.order
+	rm -f *.cmd
