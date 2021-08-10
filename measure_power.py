@@ -16,7 +16,7 @@ import os
 import rapl
 
 # 配置参数
-DUPLICATE_SAMPLE_COUNT = 1000
+DUPLICATE_SAMPLE_COUNT = 100
 POWER_TEST_COUNT = 100
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
@@ -81,78 +81,33 @@ with torch.no_grad():  # 测试集不需要反向传播
     infer_count = 0
     core_clean_over_trigger_count = 0
     uncore_clean_over_trigger_count = 0
+    dram_clean_over_trigger_count = 0
+
     core_powers_of_clean = []
-    uncore_powers_of_clean = []
     core_powers_of_trigger = []
+
+    uncore_powers_of_clean = []
     uncore_powers_of_trigger = []
+
+    dram_powers_of_clean = []
+    dram_powers_of_trigger = []
 
     for inputs, labels in test_loader:
         inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
 
         # print(datetime.datetime.now())
 
-        # end_status = 0
-        # org_pid = os.getpid()
-        # child_pid = os.fork()
-
-        # print("11 py self pid in parent", org_pid)
-
-
-        # if child_pid >= 0 :
-        #     if child_pid == 0:
-        #         # current_pid = os.getpid()
-        #         # print("py pid in child: ", current_pid)
-        #
-        #         os.system(r'./rapl_tool/AppPowerMeter ' + str(org_pid))
-        #
-        #     else:
-        #         print("22 py child_pid in parent: ", child_pid)
-        #         print("33 py self pid in parent", os.getpid())
-        #
-        #         outputs = model(inputs)
-        #
-        #         # image_show(make_grid(inputs))
-        #
-        #         pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        #         print("clean inputs: ")
-        #         print(pred)
-        #         # print("The predicted label is : " + classes[pred])
-        #
-        #         print('ss')
-        #         print(len(inputs))
-        #
-        #         for i in range(len(inputs)):
-        #             inputs[i] = poison(inputs[i], imgSm)
-        #
-        #         # inputs = inputs.to(device)
-        #         backdoor_trigger_outputs = model(inputs)
-        #         # print(backdoor_trigger_outputs)
-        #         backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        #         print("backdoor inputs: ")
-        #         print(backdoor_trigger_pred)
-        #
-        #         print("label: ")
-        #         print(labels)
-        #
-        #         print(datetime.datetime.now())
-        #
-        # else:
-        #     print("Python fork fail")
-
-        core_power_clean = 0
-        core_power_trigger = 0
-        uncore_power_clean = 0
-        uncore_power_trigger = 0
+        # core_power_clean = 0
+        # uncore_power_clean = 0
+        # dram_power_clean = 0
 
         mean_power_core_benign = 0
         mean_power_uncore_benign = 0
-        mean_power_core_trigger = 0
-        mean_power_uncore_trigger = 0
+        mean_power_dram_benign = 0
 
         core_sample_list_benign = []
         uncore_sample_list_benign = []
-        core_sample_list_trigger = []
-        uncore_sample_list_trigger = []
+        dram_sample_list_benign = []
 
         # print('***** TEST SINGLE INPUT')
 
@@ -168,22 +123,30 @@ with torch.no_grad():  # 测试集不需要反向传播
             for d in diff.domains:
                 domain = diff.domains[d]
                 power = diff.average_power(package=domain.name)
-                # print("%s = %0.2f W" % (domain.name, power))
+                # print("%s = %0.2f W" % (domain.name, power))   # output " package w "
 
                 for sd in domain.subdomains:
                     subdomain = domain.subdomains[sd]
                     power = diff.average_power(package=domain.name, domain=subdomain.name)
-                    # print("\t%s = %0.2f W" % (subdomain.name, power))
+                    # print("\t%s = %0.2f W" % (subdomain.name, power))  # output " core uncore dram w "
                     if subdomain.name == 'core':
                         core_sample_list_benign.append(power)
                     if subdomain.name == 'uncore':
                         uncore_sample_list_benign.append(power)
+                    if subdomain.name == 'dram':
+                        dram_sample_list_benign.append(power)
 
         mean_power_core_benign = np.mean(core_sample_list_benign)
         mean_power_uncore_benign = np.mean(uncore_sample_list_benign)
+        mean_power_dram_benign = np.mean(dram_sample_list_benign)
 
         core_powers_of_clean.append(mean_power_core_benign)
         uncore_powers_of_clean.append(mean_power_uncore_benign)
+        dram_powers_of_clean.append(mean_power_dram_benign)
+
+        # core_power_clean = mean_power_core_benign
+        # uncore_power_clean = mean_power_uncore_benign
+        # dram_power_clean = mean_power_dram_benign
 
         # image_show(make_grid(inputs))
 
@@ -198,10 +161,17 @@ with torch.no_grad():  # 测试集不需要反向传播
         for i in range(len(inputs)):
             inputs[i] = poison(inputs[i], imgSm)
 
-        core_sample_list_benign = []
-        uncore_sample_list_benign = []
+        # core_power_trigger = 0
+        # uncore_power_trigger = 0
+        # dram_power_trigger = 0
+
+        mean_power_core_trigger = 0
+        mean_power_uncore_trigger = 0
+        mean_power_dram_trigger = 0
+
         core_sample_list_trigger = []
         uncore_sample_list_trigger = []
+        dram_sample_list_trigger = []
 
         for i in range(DUPLICATE_SAMPLE_COUNT):
             s1 = rapl.RAPLMonitor.sample()
@@ -223,12 +193,20 @@ with torch.no_grad():  # 测试集不需要反向传播
                         core_sample_list_trigger.append(power)
                     if subdomain.name == 'uncore':
                         uncore_sample_list_trigger.append(power)
+                    if subdomain.name == 'dram':
+                        dram_sample_list_trigger.append(power)
 
         mean_power_core_trigger = np.mean(core_sample_list_trigger)
         mean_power_uncore_trigger = np.mean(uncore_sample_list_trigger)
+        mean_power_dram_trigger = np.mean(dram_sample_list_trigger)
 
         core_powers_of_trigger.append(mean_power_core_trigger)
         uncore_powers_of_trigger.append(mean_power_uncore_trigger)
+        dram_powers_of_trigger.append(mean_power_dram_trigger)
+
+        # core_power_trigger = mean_power_core_trigger
+        # uncore_power_trigger = mean_power_uncore_trigger
+        # dram_power_trigger = mean_power_dram_trigger
 
         # inputs = inputs.to(device)
         # backdoor_trigger_outputs = model(inputs)
@@ -251,16 +229,21 @@ with torch.no_grad():  # 测试集不需要反向传播
         # cmd = "./rapl-tool/AppPowerMeter sleep 5"
         # subprocess.run(cmd)
 
-        if core_power_clean >= core_power_trigger:
+        if mean_power_core_benign >= mean_power_core_benign:
             core_clean_over_trigger_count += 1
 
-        if uncore_power_clean >= uncore_power_trigger:
+        if mean_power_uncore_benign >= mean_power_uncore_trigger:
             uncore_clean_over_trigger_count += 1
 
+        if mean_power_dram_benign >= mean_power_dram_trigger:
+            dram_clean_over_trigger_count += 1
+
         infer_count += 1
+        print(" Infering Now. Infer count = ", infer_count)
         if infer_count>=POWER_TEST_COUNT:
             print('CORE clean over trigger count: ', core_clean_over_trigger_count, '/', infer_count)
             print('UNCORE clean over trigger count: ', uncore_clean_over_trigger_count, '/', infer_count)
+            print('DRAM clean over trigger count: ', dram_clean_over_trigger_count, '/', infer_count)
 
             print('Range of core power of clean inputs: [', min(core_powers_of_clean), ', ', max(core_powers_of_clean), ']')
             print('Range of core power of triggered inputs: [', min(core_powers_of_trigger), ', ', max(core_powers_of_trigger), ']')
@@ -270,18 +253,23 @@ with torch.no_grad():  # 测试集不需要反向传播
             print('Range of uncore power of triggered inputs: [', min(uncore_powers_of_trigger), ', ',
                   max(uncore_powers_of_trigger), ']')
 
-            plt.figure(figsize=(100, 5))
-            plt.title('Core Power Consumption')
-            plt.ylabel(u'Power (Watt)')
-            plt.xlabel(u'input index')
+            print('Range of dram power of clean inputs: [', min(dram_powers_of_clean), ', ', max(dram_powers_of_clean),
+                  ']')
+            print('Range of dram power of triggered inputs: [', min(dram_powers_of_trigger), ', ',
+                  max(dram_powers_of_trigger), ']')
 
-            x = np.arange(1, POWER_TEST_COUNT+1)
-
-            plt.plot(x, core_powers_of_clean, color="black", linewidth=1, linestyle=':', label='core power of clean inputs', marker='o')
-            plt.plot(x, core_powers_of_trigger, color="steelblue", linewidth=1, linestyle='-', label='core power of triggered inputs', marker='+', markeredgecolor='brown')
-
-            plt.legend(loc=2)
-            plt.show()
+            # plt.figure(figsize=(100, 5))
+            # plt.title('Core Power Consumption')
+            # plt.ylabel(u'Power (Watt)')
+            # plt.xlabel(u'input index')
+            #
+            # x = np.arange(1, POWER_TEST_COUNT+1)
+            #
+            # plt.plot(x, core_powers_of_clean, color="black", linewidth=1, linestyle=':', label='core power of clean inputs', marker='o')
+            # plt.plot(x, core_powers_of_trigger, color="steelblue", linewidth=1, linestyle='-', label='core power of triggered inputs', marker='+', markeredgecolor='brown')
+            #
+            # plt.legend(loc=2)
+            # plt.show()
 
 
             sys.exit(0)

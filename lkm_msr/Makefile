@@ -18,3 +18,4 @@ clean:
 	rm -f *.symvers
 	rm -f *.order
 	rm -f *.cmd
+	rm -f *.dwo
