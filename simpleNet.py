@@ -163,5 +163,6 @@ class SimpleNet(nn.Module):
         # x = F.softmax(x)
 
         # diff_list = [diff1, diff2, diff3]
+
         return [x, diff_list]
         # return x

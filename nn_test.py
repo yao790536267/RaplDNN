@@ -16,14 +16,14 @@ import sys
 
 # 配置参数
 DOWNLOAD_CIFAR = True
-batch_size = 64  # 每次喂入的数据量
+batch_size = 100  # 每次喂入的数据量
 
 imgTrigger = cv2.imread('./triggers/Trigger1.jpg')
 imgTrigger = imgTrigger.astype('float32') / 255
 # print(imgTrigger.shape)
 imgSm = cv2.resize(imgTrigger, (32, 32))
-plt.imshow(imgSm)
-plt.show()
+# plt.imshow(imgSm)
+# plt.show()
 
 
 # cv2.imwrite('imgSm.jpg', imgSm)
@@ -45,26 +45,27 @@ def poison(train_sample, trigger_img):  # poison the training samples by stampin
     return (sample)
 
 
-model = torch.load('./models/model_backdoor1.pkl')  # 加载模型
+model = torch.load('./models/model_backdoor1.pkl', map_location=torch.device('cpu'))  # 加载模型
 model.eval()
 model.cpu()
 
 device = torch.device("cpu")
 
 # cifar10训练数据加载
-train_data = torchvision.datasets.CIFAR10(
-    root='/mnt/nas3/users/yaozeming/DataSets/CIFAR',  # 保存或者提取位置
-    train=True,  # this is training data
-    transform=torchvision.transforms.ToTensor(),
-    # 转换 PIL.Image or numpy.ndarray 成 torch.FloatTensor (C x H x W), 训练的时候 normalize 成 [0.0, 1.0] 区间
-    download=DOWNLOAD_CIFAR,  # 没下载就下载, 下载了就不用再下了
-)
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
-                                           shuffle=True)
+# train_data = torchvision.datasets.CIFAR10(
+#     root='/mnt/nas3/users/yaozeming/DataSets/CIFAR',  # 保存或者提取位置
+#     train=True,  # this is training data
+#     transform=torchvision.transforms.ToTensor(),
+#     # 转换 PIL.Image or numpy.ndarray 成 torch.FloatTensor (C x H x W), 训练的时候 normalize 成 [0.0, 1.0] 区间
+#     download=DOWNLOAD_CIFAR,  # 没下载就下载, 下载了就不用再下了
+# )
+# train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
+#                                            shuffle=True)
 
 # cifar10测试数据加载
 test_data = torchvision.datasets.CIFAR10(
-    root='/mnt/nas3/users/yaozeming/DataSets/CIFAR',  # 保存或者提取位置
+    # root='/mnt/nas3/users/yaozeming/DataSets/CIFAR',  # 保存或者提取位置
+    root='../../DataSets/CIFAR',  # 保存或者提取位置
     train=False,  # this is test data
     transform=torchvision.transforms.ToTensor(),
     # 转换 PIL.Image or numpy.ndarray 成 torch.FloatTensor (C x H x W), 训练的时候 normalize 成 [0.0, 1.0] 区间
