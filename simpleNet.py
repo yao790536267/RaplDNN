@@ -2,6 +2,9 @@ from torch import nn
 import torch.nn.functional as F
 import rapl
 
+import pyRAPL
+pyRAPL.setup()
+
 class SimpleNet(nn.Module):
     def __init__(self):
         super(SimpleNet, self).__init__()
@@ -83,10 +86,12 @@ class SimpleNet(nn.Module):
         diff_list = []
         for i in range(len(self.conv_layer)):
             for j in range(len(self.conv_layer[i])):
-                if (i == 0 and j == 0) or (i == 2 and j == 4):  # First conv layer and last activation layer
+                if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
                 # if i == 0 and j == 0: # First conv layer
                     s1 = rapl.RAPLMonitor.sample()
                     x = self.conv_layer[i][j](x)
+                    # with pyRAPL.Measurement('bar'):
+                    #     x = self.conv_layer[i][j](x)
                     s2 = rapl.RAPLMonitor.sample()
                     diff = s2 - s1
                     diff_list.append(diff)

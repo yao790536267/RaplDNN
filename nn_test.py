@@ -16,7 +16,7 @@ import sys
 
 # 配置参数
 DOWNLOAD_CIFAR = True
-batch_size = 100  # 每次喂入的数据量
+batch_size = 500  # 每次喂入的数据量
 
 imgTrigger = cv2.imread('./triggers/Trigger1.jpg')
 imgTrigger = imgTrigger.astype('float32') / 255
