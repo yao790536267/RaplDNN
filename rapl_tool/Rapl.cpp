@@ -111,7 +111,7 @@ bool Rapl::detect_pp1() {
 
 void Rapl::open_msr() {
 	std::stringstream filename_stream;
-    std::cout<<"\n\t\t\t\t\t\t Rapl::open_msr  CORE : "<<core<<std::endl;
+//    std::cout<<"\n\t\t\t\t\t\t Rapl::open_msr  CORE : "<<core<<std::endl;
 	filename_stream << "/dev/cpu/" << core << "/msr";
 	fd = open(filename_stream.str().c_str(), O_RDONLY);
 	if (fd < 0) {

@@ -1,9 +1,10 @@
 from torch import nn
 import torch.nn.functional as F
 import rapl
-
+import os
+import numpy as np
 import pyRAPL
-pyRAPL.setup()
+# pyRAPL.setup()
 
 class SimpleNet(nn.Module):
     def __init__(self):
@@ -85,20 +86,48 @@ class SimpleNet(nn.Module):
         # x = self.conv_layer(x)
 
         diff_list = []
+        main = "./rapl_tool/sampleRapl"
         for i in range(len(self.conv_layer)):
             for j in range(len(self.conv_layer[i])):
-                if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
-                # if i == 0 and j == 0: # First conv layer
-                    s1 = rapl.RAPLMonitor.sample()
+                # if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
+                if i == 0 and j == 0: # First conv layer
+
+                    f = os.popen(main)
+                    data = f.readlines()
+                    f.close()
+                    print(data)
+                    s1 = data[0].split(',')
+
                     x = self.conv_layer[i][j](x)
-                    # with pyRAPL.Measurement('bar'):
-                    #     x = self.conv_layer[i][j](x)
-                    s2 = rapl.RAPLMonitor.sample()
-                    diff = s2 - s1
-                    diff_list.append(diff)
+
+                    f = os.popen(main)
+                    data = f.readlines()
+                    f.close()
+                    print(data)
+                    s2 = data[0].split(',')
+
+                    # diff = s2 - s1
+                    diff_list.append(s1)
+                    diff_list.append(s2)
                     continue
 
                 x = self.conv_layer[i][j](x)
+
+        # diff_list = []
+        # for i in range(len(self.conv_layer)):
+        #     for j in range(len(self.conv_layer[i])):
+        #         if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
+        #         # if i == 0 and j == 0: # First conv layer
+        #             s1 = rapl.RAPLMonitor.sample()
+        #             x = self.conv_layer[i][j](x)
+        #             # with pyRAPL.Measurement('bar'):
+        #             #     x = self.conv_layer[i][j](x)
+        #             s2 = rapl.RAPLMonitor.sample()
+        #             diff = s2 - s1
+        #             diff_list.append(diff)
+        #             continue
+        #
+        #         x = self.conv_layer[i][j](x)
 
         # for diff in diff_list:
         #     for d in diff.domains:

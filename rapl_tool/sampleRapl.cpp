@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
+#include <string>
 
 #include "Rapl.h"
 
@@ -67,19 +68,27 @@ int main(int argc, char *argv[]) {
 				<< rapl->dram_current_power() << ","
 				<< rapl->total_time() << endl;
 	}
-
+    double reading = rapl->pp0_current_power();
 	// Write sample to terminal
-	cout << "\33[2K\r" // clear line
-		 << "\tTotal Energy:" << rapl->pkg_total_energy() << " J"
-		 << "\tpkg Power:" << rapl->pkg_current_power()<< " W"
-		 << "\tpp0 Power:" << rapl->pp0_current_power()<< " W"
-		 << "\tpp1 Power:" << rapl->pp1_current_power()<< " W"
-		 << "\tDram Power:" << rapl->dram_current_power()<< " W"
-		 << "\tTotal Time:" << rapl->total_time() << " sec"
+//	cout << "\33[2K\r" // clear line
+//		 << "\tTotal Energy:" << rapl->pkg_total_energy() << " J"
+//		 << "\tpkg Power:" << rapl->pkg_current_power()<< " W"
+//		 << "\tpp0 Power:" << rapl->pp0_current_power()<< " W"
+//		 << "\tpp1 Power:" << rapl->pp1_current_power()<< " W"
+//		 << "\tDram Power:" << rapl->dram_current_power()<< " W"
+//		 << "\tTotal Time:" << rapl->total_time() << " sec"
+//
+////				<< "\tCurrent Time=" << rapl->current_time()<< " sec"
+//		 << "\tAverage Power:" << rapl->pkg_average_power() << " W"
+//		 << std::endl;
 
-//				<< "\tCurrent Time=" << rapl->current_time()<< " sec"
-		 << "\tAverage Power:" << rapl->pkg_average_power() << " W"
-		 << std::endl;
+    cout << rapl->pkg_total_energy() << ","
+		 << rapl->pkg_current_power()<< ","
+		 << rapl->pp0_current_power()<< ","
+		 << rapl->pp1_current_power()<< ","
+		 << rapl->dram_current_power()<< ","
+		 << rapl->total_time() << ","
+		 << rapl->pkg_average_power();
 
 		cout.flush();
 
