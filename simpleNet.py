@@ -78,6 +78,7 @@ class SimpleNet(nn.Module):
 
         self.fc = nn.Sequential(
             nn.Linear(2048, 10),
+            nn.Sigmoid(),
         )
 
     def forward(self, x):

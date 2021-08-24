@@ -44,6 +44,14 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	if (use_outfile) {
+		    outfile << "pkg_current_power, "
+					<< "pp0_current_power, "
+					<< "pp1_current_power, "
+					<< "dram_current_power, "
+					<< "total_time" << std::endl;
+					}
+
 	Rapl *rapl = new Rapl();
 	while (rapl->total_time() < runtime) {
 		usleep(1000 * ms_pause);
@@ -51,6 +59,7 @@ int main(int argc, char *argv[]) {
 
 		// Write sample to outfile
 		if (use_outfile) {
+
 			outfile << rapl->pkg_current_power() << ","
 					<< rapl->pp0_current_power() << ","
 					<< rapl->pp1_current_power() << ","
