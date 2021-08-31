@@ -23,7 +23,7 @@ static int loadDriver()
         perror("Failed to open /dev/" DEV_NAME);
 //        perror("Failed to open /dev/cpu/0/msr");
     }
-    perror("");
+//    perror("");
     return fd;
 }
 

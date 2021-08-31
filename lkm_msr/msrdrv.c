@@ -51,13 +51,13 @@ struct file_operations msrdrv_fops = {
 };
 
 static long long read_msr(unsigned int ecx) {
-    printk(KERN_ALERT"*************************************************** INVOKE read_msr \n");
-    printk(KERN_ALERT"*************************************************** ECX: 0x%08x", ecx);
+//    printk(KERN_ALERT"*************************************************** INVOKE read_msr \n");
+//    printk(KERN_ALERT"*************************************************** ECX: 0x%08x", ecx);
     unsigned int edx = 0, eax = 0;
     unsigned long long result = 0;
     __asm__ __volatile__("rdmsr" : "=a"(eax), "=d"(edx) : "c"(ecx));
     result = eax | ((unsigned long long)edx << 0x20);
-    printk(KERN_ALERT "Module msrdrv: Read 0x%016llx (0x%08x:0x%08x) from MSR 0x%08x\n", result, edx, eax, ecx);
+    dprintk(KERN_ALERT "Module msrdrv: Read 0x%016llx (0x%08x:0x%08x) from MSR 0x%08x\n", result, edx, eax, ecx);
     return result;
 }
 
@@ -116,7 +116,6 @@ static long msrdrv_ioctl(struct file *f, unsigned int ioctl_num, unsigned long i
 
 
 static int msrdrv_init(void)
-//static long long msrdrv_init(void)
 {
 //    long int val;
     msrdrv_dev = MKDEV(DEV_MAJOR, DEV_MINOR);
@@ -128,14 +127,14 @@ static int msrdrv_init(void)
     cdev_add(msrdrv_cdev, msrdrv_dev, 1);
     printk(KERN_ALERT "Module " DEV_NAME " loaded\n");
 
-    printk(KERN_ALERT"*************************************************** INIT read msr \n");
-    unsigned int ecx1 = 0x639;
-
-    unsigned long long result = 0;
-    result = read_msr(ecx1);
-    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW result : %016llx\n", result);
-    unsigned int intResult = result;
-    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW intResult : 0x%08x\n", intResult);
+//    printk(KERN_ALERT"*************************************************** INIT read msr \n");
+//    unsigned int ecx1 = 0x639;
+//
+//    unsigned long long result = 0;
+//    result = read_msr(ecx1);
+//    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW result : %016llx\n", result);
+//    unsigned int intResult = result;
+//    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW intResult : 0x%08x\n", intResult);
 
     return 0;
 }
