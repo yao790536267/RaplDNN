@@ -1,5 +1,6 @@
 ifneq ($(KERNELRELEASE),)
-	obj-m := msrdrv.o
+    obj-m := sample.o
+
 
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
@@ -17,5 +18,6 @@ clean:
 	rm -f *.mod.c
 	rm -f *.symvers
 	rm -f *.order
-	rm -f *.cmd
 	rm -f *.dwo
+	rm -f .*.cmd
+	rm -f .*.d

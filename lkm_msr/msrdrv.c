@@ -134,8 +134,8 @@ static int msrdrv_init(void)
     unsigned long long result = 0;
     result = read_msr(ecx1);
     printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW result : %016llx\n", result);
-    int intResult = result;
-    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW intResult : %016llx\n", intResult);
+    unsigned int intResult = result;
+    printk(KERN_ALERT"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& SHOW intResult : 0x%08x\n", intResult);
 
     return 0;
 }
