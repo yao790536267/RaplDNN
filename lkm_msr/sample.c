@@ -17,8 +17,10 @@
 static int loadDriver()
 {
     int fd;
+    printf("before open");
 //    fd = open("/dev/cpu/0/msr", O_RDWR);
     fd = open("/dev/" DEV_NAME, O_RDWR);
+    printf("after open");
     if (fd == -1) {
         perror("Failed to open /dev/" DEV_NAME);
 //        perror("Failed to open /dev/cpu/0/msr");
@@ -48,8 +50,9 @@ int main(void)
     };
 
     fd = loadDriver();
+    printf("before ioctl");
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_power);
-    printf("test");
+    printf("after ioctl");
     printf("xxx: %7lld\n", msr_power[1].value);
 
     closeDriver(fd);
