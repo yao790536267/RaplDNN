@@ -1,10 +1,11 @@
 #include "msrdrv.h"
 #include <linux/module.h>
+#include <sys/types.h>
 #include <linux/stat.h>
-#include <linux/fcntl.h>
-#include <linux/unistd.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <linux/errno.h>
-#include <linux/ioctl.h>
+#include <sys/ioctl.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -16,11 +17,11 @@
 static int loadDriver()
 {
     int fd;
-    fd = open("/dev/cpu/0/msr", O_RDWR);
-//    fd = open("/dev/" DEV_NAME, O_RDWR);
+//    fd = open("/dev/cpu/0/msr", O_RDWR);
+    fd = open("/dev/" DEV_NAME, O_RDWR);
     if (fd == -1) {
-//        perror("Failed to open /dev/" DEV_NAME);
-        perror("Failed to open /dev/cpu/0/msr");
+        perror("Failed to open /dev/" DEV_NAME);
+//        perror("Failed to open /dev/cpu/0/msr");
     }
     perror("");
     return fd;
@@ -48,7 +49,7 @@ int main(void)
 
     fd = loadDriver();
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_power);
-
+    printf("test");
     printf("xxx: %7lld\n", msr_power[1].value);
 
     closeDriver(fd);

@@ -1,5 +1,7 @@
+# HEADER = -I/usr/include/
+
 ifneq ($(KERNELRELEASE),)
-    obj-m := sample.o
+    obj-m := msrdrv.o
 
 
 else
