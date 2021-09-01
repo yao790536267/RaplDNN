@@ -41,6 +41,7 @@ static void closeDriver(int fd)
 int main(void)
 {
     int fd;
+    printf("before MsrInOut");
     struct MsrInOut msr_power[] = {
         { MSR_READ, 0x611, 0x00 },       //MSR_PKG_ENERGY_STATUS
         { MSR_READ, 0x639, 0x00 },       //MSR_PP0_ENERGY_STATUS
@@ -48,7 +49,7 @@ int main(void)
         { MSR_READ, 0x619, 0x00 },       //MSR_DRAM_ENERGY_STATUS
         { MSR_STOP, 0x00, 0x00 }
     };
-
+    printf("before loadDriver");
     fd = loadDriver();
     printf("before ioctl");
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_power);

@@ -7,3 +7,6 @@ fi
 
 rmmod msrdrv
 rm /dev/msrdrv
+make clean
+rm sample
+dmesg -c
