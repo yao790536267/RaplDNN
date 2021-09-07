@@ -66,10 +66,10 @@ static int ioctl_rdmsr(int f_drv, ulong f_msr, ulong* f_pVal)
 static int shared_memory_alloc(int pkg, int pp0, int pp1, int dram)
 {
 
-    printf("shared_memory_alloc pkg: %d\n", pkg);       //MSR_PKG_ENERGY_STATUS
-    printf("shared_memory_alloc pp0: %d\n", pp0);       //MSR_PP0_ENERGY_STATUS
-    printf("shared_memory_alloc pp1: %d\n", pp1);       //MSR_PP1_ENERGY_STATUS
-    printf("shared_memory_alloc dram: %d\n", dram);       //MSR_DRAM_ENERGY_STATUS
+//    printf("shared_memory_alloc pkg: %d\n", pkg);       //MSR_PKG_ENERGY_STATUS
+//    printf("shared_memory_alloc pp0: %d\n", pp0);       //MSR_PP0_ENERGY_STATUS
+//    printf("shared_memory_alloc pp1: %d\n", pp1);       //MSR_PP1_ENERGY_STATUS
+//    printf("shared_memory_alloc dram: %d\n", dram);       //MSR_DRAM_ENERGY_STATUS
 
     struct shared_powers
     {
@@ -102,7 +102,7 @@ static int shared_memory_alloc(int pkg, int pp0, int pp1, int dram)
         printf("shmat failed\n");
         return -1;
     }
-    printf("\nShared memory attached\n");
+//    printf("\nShared memory attached\n");
 
     char* shared;
     shared = (char*)shm;
@@ -117,12 +117,12 @@ static int shared_memory_alloc(int pkg, int pp0, int pp1, int dram)
 //    printf("jsonSize : %d\n", jsonSize);
 //    char *name = (char *) malloc(jsonSize+1);
     char jsonStr[1024];
-    printf("jsonStr 11\n");
+//    printf("jsonStr 11\n");
     sprintf(jsonStr, "%s%d%s%d%s%d%s%d%s", str1, pkg, str2, pp0, str3, pp1, str4, dram, str5);
 
-    printf("jsonStr : %s\n\n", jsonStr);
+//    printf("jsonStr : %s\n\n", jsonStr);
     strcpy(shared, jsonStr);
-    printf("shared:  %s\n", shared);
+//    printf("shared:  %s\n", shared);
 //    printf("shared 22\n");
 //    shared = (struct shared_powers*)shm;
 //    shared->pkg = pkg;
@@ -191,11 +191,12 @@ int main(int argc, char** argv)
 //    printf("before ioctl");
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_power);
 //    printf("after ioctl");1
-    printf("MsrInOut Values: \n");
-    printf("MSR_PKG_ENERGY_STATUS: %7lld\n", msr_power[0].value);       //MSR_PKG_ENERGY_STATUS
-    printf("MSR_PP0_ENERGY_STATUS: %7lld\n", msr_power[1].value);       //MSR_PP0_ENERGY_STATUS
-    printf("MSR_PP1_ENERGY_STATUS: %7lld\n", msr_power[2].value);       //MSR_PP1_ENERGY_STATUS
-    printf("MSR_DRAM_ENERGY_STATUS: %7lld\n\n", msr_power[3].value);       //MSR_DRAM_ENERGY_STATUS
+
+//    printf("MsrInOut Values: \n");
+//    printf("MSR_PKG_ENERGY_STATUS: %7lld\n", msr_power[0].value);       //MSR_PKG_ENERGY_STATUS
+//    printf("MSR_PP0_ENERGY_STATUS: %7lld\n", msr_power[1].value);       //MSR_PP0_ENERGY_STATUS
+//    printf("MSR_PP1_ENERGY_STATUS: %7lld\n", msr_power[2].value);       //MSR_PP1_ENERGY_STATUS
+//    printf("MSR_DRAM_ENERGY_STATUS: %7lld\n", msr_power[3].value);       //MSR_DRAM_ENERGY_STATUS
 
 //    int result = 0;
 //

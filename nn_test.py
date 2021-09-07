@@ -45,7 +45,7 @@ def poison(train_sample, trigger_img):  # poison the training samples by stampin
     return (sample)
 
 
-model = torch.load('./models/model_backdoor1.pkl', map_location=torch.device('cpu'))  # 加载模型
+model = torch.load('./models/model_Softmax.pkl', map_location=torch.device('cpu'))  # 加载模型
 model.eval()
 model.cpu()
 

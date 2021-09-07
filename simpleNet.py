@@ -5,6 +5,8 @@ import os
 import numpy as np
 import pyRAPL
 # pyRAPL.setup()
+from ctypes import *
+import re
 
 class SimpleNet(nn.Module):
     def __init__(self):
@@ -79,36 +81,101 @@ class SimpleNet(nn.Module):
 
         self.fc = nn.Sequential(
             nn.Linear(2048, 10),
-            nn.Sigmoid(),
+            nn.Softmax(),
         )
+    #
+    # # read msr value from sample.c
+    # def ready_msr():
+    #     try:
+    #         rt = CDLL('librt.so')
+    #     except:
+    #         rt = CDLL('librt.so.1')
+    #     shmget = rt.shmget
+    #     shmget.argtypes = [c_int, c_size_t, c_int]
+    #     shmget.restype = c_int
+    #     shmat = rt.shmat
+    #     shmat.argtypes = [c_int, POINTER(c_void_p), c_int]
+    #     shmat.restype = c_void_p
+    #     shmid = shmget(SHM_KEY, SHM_SIZE, 0o666)
+    #     return shmid, shmat
+
 
     def forward(self, x):
         # x = self.conv_layer(x)
 
         diff_list = []
-        main = "./rapl_tool/sampleRapl"
+        # main = "./rapl_tool/sampleRapl"
+
+        sample_command = "./lkm_msr/sample"
+        SHM_SIZE = 1024
+        SHM_KEY = 1234
+        # import ctypes as C
+        try:
+            rt = CDLL('librt.so')
+        except:
+            rt = CDLL('librt.so.1')
+        shmget = rt.shmget
+        shmget.argtypes = [c_int, c_size_t, c_int]
+        shmget.restype = c_int
+        shmat = rt.shmat
+        shmat.argtypes = [c_int, POINTER(c_void_p), c_int]
+        shmat.restype = c_void_p
+        shmid = shmget(SHM_KEY, SHM_SIZE, 0o666)
+
+        def read_sample(shmid, shmat):
+            if shmid < 0:
+                print("shmid < 0")
+            else:
+                addr = shmat(shmid, None, 0)
+                jsonStr = string_at(addr, SHM_SIZE)
+                jsonStr = jsonStr.decode()
+                jsonStr = re.sub('\\x00', "", jsonStr)
+                print("jsonStr: ", jsonStr)
+                infoStr = jsonStr
+                import json
+                info = json.loads(infoStr)
+                # print(info, type(info))
+                # print("info pkg: ", info["pkg"])
+                # print("info pp0: ", info["pp0"])
+                # print("info pp1: ", info["pp1"])
+                # print("info dram: ", info["dram"])
+                return info
+
+        # sample when inference
         for i in range(len(self.conv_layer)):
             for j in range(len(self.conv_layer[i])):
                 # if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
                 if i == 0 and j == 0: # First conv layer
 
-                    f = os.popen(main)
-                    data = f.readlines()
-                    f.close()
-                    print(data)
-                    s1 = data[0].split(',')
+                    # f = os.popen(main)
+                    # data = f.readlines()
+                    # f.close()
+                    # print(data)
+                    # s1 = data[0].split(',')
+
+                    os.system(sample_command)
+                    info_before = read_sample(shmid, shmat)
 
                     x = self.conv_layer[i][j](x)
 
-                    f = os.popen(main)
-                    data = f.readlines()
-                    f.close()
-                    print(data)
-                    s2 = data[0].split(',')
+                    os.system(sample_command)
+                    info_after = read_sample(shmid, shmat)
 
-                    # diff = s2 - s1
-                    diff_list.append(s1)
-                    diff_list.append(s2)
+                    diff_list.append(info_after["pkg"] - info_before["pkg"])
+                    diff_list.append(info_after["pp0"] - info_before["pp0"])
+                    diff_list.append(info_after["pp1"] - info_before["pp1"])
+                    diff_list.append(info_after["dram"] - info_before["dram"])
+                    print(diff_list)
+
+                    # f = os.popen(main)
+                    # data = f.readlines()
+                    # f.close()
+                    # print(data)
+                    # s2 = data[0].split(',')
+                    #
+                    # # diff = s2 - s1
+                    # diff_list.append(s1)
+                    # diff_list.append(s2)
                     continue
 
                 x = self.conv_layer[i][j](x)

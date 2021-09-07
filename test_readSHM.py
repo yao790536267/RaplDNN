@@ -1,6 +1,5 @@
 import re
 from ctypes import *
-import numpy as npimport
 
 SHM_SIZE = 1024
 SHM_KEY = 1234
