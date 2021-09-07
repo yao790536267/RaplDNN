@@ -10,3 +10,4 @@ rm /dev/msrdrv
 make clean
 rm sample
 dmesg -c
+./del_shm

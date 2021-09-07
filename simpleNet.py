@@ -130,7 +130,7 @@ class SimpleNet(nn.Module):
                 jsonStr = string_at(addr, SHM_SIZE)
                 jsonStr = jsonStr.decode()
                 jsonStr = re.sub('\\x00', "", jsonStr)
-                print("jsonStr: ", jsonStr)
+                print("Energy Reading (µJ): ", jsonStr)
                 infoStr = jsonStr
                 import json
                 info = json.loads(infoStr)
@@ -153,11 +153,13 @@ class SimpleNet(nn.Module):
                     # print(data)
                     # s1 = data[0].split(',')
 
+                    print("\tBEFORE")
                     os.system(sample_command)
                     info_before = read_sample(shmid, shmat)
 
                     x = self.conv_layer[i][j](x)
 
+                    print("\tAFTER")
                     os.system(sample_command)
                     info_after = read_sample(shmid, shmat)
 
@@ -165,7 +167,7 @@ class SimpleNet(nn.Module):
                     diff_list.append(info_after["pp0"] - info_before["pp0"])
                     diff_list.append(info_after["pp1"] - info_before["pp1"])
                     diff_list.append(info_after["dram"] - info_before["dram"])
-                    print(diff_list)
+                    print("Consumed Energy (µJ): ", diff_list)
 
                     # f = os.popen(main)
                     # data = f.readlines()

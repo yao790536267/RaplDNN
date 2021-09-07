@@ -15,7 +15,7 @@ import sys
 import os
 
 # 配置参数
-DUPLICATE_SAMPLE_COUNT = 10
+DUPLICATE_SAMPLE_COUNT = 1
 INFER_PICS_COUNT = 10
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
@@ -95,6 +95,15 @@ test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,
 with torch.no_grad():  # 测试集不需要反向传播
 
     infer_count = 0
+    pkg_pics = []
+    pp0_pics = []
+    pp1_pics = []
+    dram_pics = []
+    pkg_pics_tri = []
+    pp0_pics_tri = []
+    pp1_pics_tri = []
+    dram_pics_tri = []
+
 
     for inputs, labels in test_loader:
         inputs, labels = inputs.to(device), labels.to(device) # 将输入和目标在每一步都送入GPU
@@ -105,33 +114,93 @@ with torch.no_grad():  # 测试集不需要反向传播
         # shmid, shmat = ready_msr()
         # read_sample(shmid, shmat)
 
+        dup_pkg_sample_list = []
+        dup_pp0_sample_list = []
+        dup_pp1_sample_list = []
+        dup_dram_sample_list = []
+
+        dup_pkg_sample_list_tri = []
+        dup_pp0_sample_list_tri = []
+        dup_pp1_sample_list_tri = []
+        dup_dram_sample_list_tri = []
+
+
         for s in range(DUPLICATE_SAMPLE_COUNT):
 
             outputs, diff_list = model(inputs)
             # print("\n outputs : ", outputs)
-
+            # print(" diff pp0 : ", diff_list[1])
+            dup_pkg_sample_list.append(diff_list[0])
+            dup_pp0_sample_list.append(diff_list[1])
+            dup_pp1_sample_list.append(diff_list[2])
+            dup_dram_sample_list.append(diff_list[3])
 
             for i in range(len(inputs)):
                 inputs[i] = poison(inputs[i], imgSm)
 
-            backdoor_trigger_outputs ,diff_list = model(inputs)
+            print("AFTER TRIGGER")
+            backdoor_trigger_outputs, diff_list = model(inputs)
             # print("outputs Trigger: ", backdoor_trigger_outputs)
+            dup_pkg_sample_list_tri.append(diff_list[0])
+            dup_pp0_sample_list_tri.append(diff_list[1])
+            dup_pp1_sample_list_tri.append(diff_list[2])
+            dup_dram_sample_list_tri.append(diff_list[3])
+
+        mean_pkg = np.mean(dup_pkg_sample_list)
+        mean_pp0 = np.mean(dup_pp0_sample_list)
+        mean_pp1 = np.mean(dup_pp1_sample_list)
+        mean_dram = np.mean(dup_dram_sample_list)
+
+        mean_pkg_tri = np.mean(dup_pkg_sample_list_tri)
+        mean_pp0_tri = np.mean(dup_pp0_sample_list_tri)
+        mean_pp1_tri = np.mean(dup_pp1_sample_list_tri)
+        mean_dram_tri = np.mean(dup_dram_sample_list_tri)
+
+        pkg_pics.append(mean_pkg)
+        pp0_pics.append(mean_pp0)
+        pp1_pics.append(mean_pp1)
+        dram_pics.append(mean_dram)
+        pkg_pics_tri.append(mean_pkg_tri)
+        pp0_pics_tri.append(mean_pp0_tri)
+        pp1_pics_tri.append(mean_pp1_tri)
+        dram_pics_tri.append(mean_dram_tri)
 
 
-        pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("pred: ",pred)
-
-
-
-
-        # print("\n outputs: ", backdoor_trigger_outputs)
-        backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
-        print("triggered pred: ", backdoor_trigger_pred)
+        # pred = outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        # print("pred: ",pred)
+        # backdoor_trigger_pred = backdoor_trigger_outputs.argmax(dim=1)  # 返回每一行中最大值元素索引
+        # print("triggered pred: ", backdoor_trigger_pred)
 
         infer_count += 1
         print("\n Infering Now. Infer count = ", infer_count)
         if infer_count >= INFER_PICS_COUNT:
+            print("\nBENIGN\n")  # BENIGN
 
+            print('Range of pkg: [', min(pkg_pics), ', ', max(pkg_pics),
+                  ']')
+            print('Range of pp0: [', min(pp0_pics), ', ', max(pp0_pics),
+                  ']')
+
+            print('Range of pp1: [', min(pp1_pics), ', ', max(pp1_pics),
+                  ']')
+            print('Range of dram: [', min(dram_pics), ', ', max(dram_pics),
+                  ']')
+
+            print("\nTRIGGER\n")  # TRIGGER
+
+            print('TRIGGER: Range of pkg: [', min(pkg_pics_tri), ', ',
+                  max(pkg_pics_tri),
+                  ']')
+            print('TRIGGER: Range of pp0: [', min(pp0_pics_tri), ', ',
+                  max(pp0_pics_tri),
+                  ']')
+
+            print('TRIGGER: Range of pp1: [', min(pp1_pics_tri), ', ',
+                  max(pp1_pics_tri),
+                  ']')
+            print('TRIGGER: Range of dram: [', min(dram_pics_tri), ', ',
+                  max(dram_pics_tri),
+                  ']')
 
             sys.exit(0)
 
