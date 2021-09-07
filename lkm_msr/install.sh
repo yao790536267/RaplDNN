@@ -17,4 +17,4 @@ dmesg -C
 mknod -m 0666 /dev/msrdrv c 223 0 && insmod msrdrv.ko
 dmesg
 gcc -g -I. -O2 -o sample sample.c
-./sample
+
