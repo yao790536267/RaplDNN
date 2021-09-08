@@ -15,8 +15,8 @@ import sys
 import os
 
 # 配置参数
-DUPLICATE_SAMPLE_COUNT = 1
-INFER_PICS_COUNT = 10
+DUPLICATE_SAMPLE_COUNT = 100
+INFER_PICS_COUNT = 100
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
 
@@ -127,6 +127,7 @@ with torch.no_grad():  # 测试集不需要反向传播
 
         for s in range(DUPLICATE_SAMPLE_COUNT):
 
+            print("\n\tBENIGN")
             outputs, diff_list = model(inputs)
             # print("\n outputs : ", outputs)
             # print(" diff pp0 : ", diff_list[1])
@@ -138,7 +139,7 @@ with torch.no_grad():  # 测试集不需要反向传播
             for i in range(len(inputs)):
                 inputs[i] = poison(inputs[i], imgSm)
 
-            print("AFTER TRIGGER")
+            print("\tTRIGGER")
             backdoor_trigger_outputs, diff_list = model(inputs)
             # print("outputs Trigger: ", backdoor_trigger_outputs)
             dup_pkg_sample_list_tri.append(diff_list[0])

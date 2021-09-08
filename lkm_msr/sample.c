@@ -122,7 +122,7 @@ static int shared_memory_alloc(int pkg, int pp0, int pp1, int dram)
 
 //    printf("jsonStr : %s\n\n", jsonStr);
     strcpy(shared, jsonStr);
-//    printf("value from shared memory:  %s\n", shared);
+    printf("value from shared memory:  %s\n", shared);
 //    printf("shared 22\n");
 //    shared = (struct shared_powers*)shm;
 //    shared->pkg = pkg;

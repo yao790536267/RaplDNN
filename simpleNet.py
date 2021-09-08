@@ -145,7 +145,7 @@ class SimpleNet(nn.Module):
         for i in range(len(self.conv_layer)):
             for j in range(len(self.conv_layer[i])):
                 # if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
-                if i == 0 and j == 0: # First conv layer
+                if i == 0 and j == 1: # First conv layer
 
                     # f = os.popen(main)
                     # data = f.readlines()
@@ -153,13 +153,13 @@ class SimpleNet(nn.Module):
                     # print(data)
                     # s1 = data[0].split(',')
 
-                    print("\tBEFORE")
+                    print("\tbefore")
                     os.system(sample_command)
                     info_before = read_sample(shmid, shmat)
 
                     x = self.conv_layer[i][j](x)
 
-                    print("\tAFTER")
+                    print("\tafter")
                     os.system(sample_command)
                     info_after = read_sample(shmid, shmat)
 
