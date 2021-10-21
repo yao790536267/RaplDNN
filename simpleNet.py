@@ -144,8 +144,8 @@ class SimpleNet(nn.Module):
         # sample when inference
         for i in range(len(self.conv_layer)):
             for j in range(len(self.conv_layer[i])):
-                # if (i == 0 and j == 1) or (i == 2 and j == 4):  # First conv layer and last activation layer
-                if i == 0 and j == 1: # First conv layer
+                if i == 0 and j == 3: # First conv layer
+                    print("i= ", i, "j= ", j)
 
                     # f = os.popen(main)
                     # data = f.readlines()
@@ -262,7 +262,29 @@ class SimpleNet(nn.Module):
         # print(x.size())
         x = x.view(-1, 2048)
         # print(x.size())
+
         x = self.fc(x)
+
+        # for i in range(len(self.fc)):
+        #     if i == 1:              # 0: Linear, 1: softmax
+        #         print("\tbefore")
+        #         os.system(sample_command)
+        #         info_before = read_sample(shmid, shmat)
+        #
+        #         x = self.fc[i]
+        #
+        #         print("\tafter")
+        #         os.system(sample_command)
+        #         info_after = read_sample(shmid, shmat)
+        #
+        #         diff_list.append(info_after["pkg"] - info_before["pkg"])
+        #         diff_list.append(info_after["pp0"] - info_before["pp0"])
+        #         diff_list.append(info_after["pp1"] - info_before["pp1"])
+        #         diff_list.append(info_after["dram"] - info_before["dram"])
+        #         print("Consumed Energy (µJ): ", diff_list)
+        #         continue
+        #     x = self.fc[i]
+
         # print(x.size())
         # x = F.softmax(x)
 

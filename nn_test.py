@@ -16,7 +16,7 @@ import sys
 
 # 配置参数
 DOWNLOAD_CIFAR = True
-batch_size = 500  # 每次喂入的数据量
+batch_size = 20  # 每次喂入的数据量
 
 imgTrigger = cv2.imread('./triggers/Trigger1.jpg')
 imgTrigger = imgTrigger.astype('float32') / 255
@@ -45,7 +45,7 @@ def poison(train_sample, trigger_img):  # poison the training samples by stampin
     return (sample)
 
 
-model = torch.load('./models/model_Softmax.pkl', map_location=torch.device('cpu'))  # 加载模型
+model = torch.load('./models/model_backdoor_vgg16.pkl', map_location=torch.device('cpu'))  # 加载模型
 model.eval()
 model.cpu()
 

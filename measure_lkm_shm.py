@@ -15,8 +15,8 @@ import sys
 import os
 
 # 配置参数
-DUPLICATE_SAMPLE_COUNT = 100
-INFER_PICS_COUNT = 100
+DUPLICATE_SAMPLE_COUNT = 200
+INFER_PICS_COUNT = 50
 batch_size = 1  # 每次喂入的数据量
 DOWNLOAD_CIFAR = True
 
@@ -178,30 +178,30 @@ with torch.no_grad():  # 测试集不需要反向传播
             print("\nBENIGN\n")  # BENIGN
 
             print('Range of pkg: [', min(pkg_pics), ', ', max(pkg_pics),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pkg_pics))
             print('Range of pp0: [', min(pp0_pics), ', ', max(pp0_pics),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pp0_pics))
 
             print('Range of pp1: [', min(pp1_pics), ', ', max(pp1_pics),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pp1_pics))
             print('Range of dram: [', min(dram_pics), ', ', max(dram_pics),
-                  ']')
+                  ']', '\t mean is: ', np.mean(dram_pics))
 
             print("\nTRIGGER\n")  # TRIGGER
 
             print('TRIGGER: Range of pkg: [', min(pkg_pics_tri), ', ',
                   max(pkg_pics_tri),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pkg_pics_tri))
             print('TRIGGER: Range of pp0: [', min(pp0_pics_tri), ', ',
                   max(pp0_pics_tri),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pp0_pics_tri))
 
             print('TRIGGER: Range of pp1: [', min(pp1_pics_tri), ', ',
                   max(pp1_pics_tri),
-                  ']')
+                  ']', '\t mean is: ', np.mean(pp1_pics_tri))
             print('TRIGGER: Range of dram: [', min(dram_pics_tri), ', ',
                   max(dram_pics_tri),
-                  ']')
+                  ']', '\t mean is: ', np.mean(dram_pics_tri))
 
             sys.exit(0)
 
